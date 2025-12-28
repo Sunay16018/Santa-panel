@@ -2,12 +2,12 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Santa Lite</title>
+    <title>Santa Panel Pro</title>
     <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <button onclick="addBot()" class="plus-btn">HESAP +</button>
+    <button onclick="addBot()" class="plus-btn">HESAP EKLE +</button>
     <div id="panels"></div>
     <script>
         const socket = io();
@@ -17,25 +17,33 @@
             const p = document.createElement('div');
             p.className = "container";
             p.innerHTML = `
-                <h3>Hesap ${id}</h3>
+                <h3>Bot #${id}</h3>
                 <input id="h${id}" placeholder="IP:Port"> <input id="u${id}" placeholder="İsim">
                 <button onclick="join(${id})" class="main-btn">BAĞLAN</button>
                 <div id="l${id}" class="log-box"></div>
-                <div class="oto">
-                    <input id="om${id}" placeholder="Oto Mesaj">
-                    <input id="ot${id}" type="number" placeholder="Sn" style="width:50px">
-                    <button onclick="start(${id},true)">BAŞLAT</button>
-                    <button onclick="start(${id},false)">DUR</button>
+                
+                <div class="oto-box">
+                    <input id="om${id}" placeholder="Otomatik Mesaj">
+                    <div style="display:flex; gap:5px; margin:5px 0;">
+                        <input id="ot${id}" type="number" placeholder="Süre" style="width:60%">
+                        <select id="ou${id}"><option value="sec">Sn</option><option value="min">Dk</option><option value="hour">Sa</option></select>
+                    </div>
+                    <button onclick="start(${id},true)" style="background:#27ae60">BAŞLAT</button>
+                    <button onclick="start(${id},false)" style="background:#c0392b">DUR</button>
                 </div>
+
                 <input id="m${id}" placeholder="Mesaj..." onkeypress="if(event.key==='Enter')send(${id})">
+                
                 <div class="controls">
-                    <button onmousedown="mv(${id},'forward',true)" onmouseup="mv(${id},'forward',false)">▲</button>
-                    <button onmousedown="mv(${id},'left',true)" onmouseup="mv(${id},'left',false)">◀</button>
-                    <button onmousedown="mv(${id},'back',true)" onmouseup="mv(${id},'back',false)">▼</button>
-                    <button onmousedown="mv(${id},'right',true)" onmouseup="mv(${id},'right',false)">▶</button>
+                    <button class="ctrl" onmousedown="mv(${id},'forward',true)" onmouseup="mv(${id},'forward',false)" ontouchstart="mv(${id},'forward',true)" ontouchend="mv(${id},'forward',false)">▲</button>
+                    <button class="ctrl" onmousedown="mv(${id},'left',true)" onmouseup="mv(${id},'left',false)" ontouchstart="mv(${id},'left',true)" ontouchend="mv(${id},'left',false)">◀</button>
+                    <button class="ctrl" onmousedown="mv(${id},'back',true)" onmouseup="mv(${id},'back',false)" ontouchstart="mv(${id},'back',true)" ontouchend="mv(${id},'back',false)">▼</button>
+                    <button class="ctrl" onmousedown="mv(${id},'right',true)" onmouseup="mv(${id},'right',false)" ontouchstart="mv(${id},'right',true)" ontouchend="mv(${id},'right',false)">▶</button>
+                    <button class="jump-btn" onclick="jump(${id})">ZIPLA</button>
                 </div>`;
             document.getElementById('panels').appendChild(p);
         }
+
         function join(id) {
             const h = document.getElementById('h'+id).value.split(':');
             socket.emit('join', { botId: id, host: h[0], port: h[1]||25565, username: document.getElementById('u'+id).value });
@@ -45,9 +53,16 @@
             socket.emit('send-chat', { botId: id, msg: i.value }); i.value = "";
         }
         function start(id, act) {
-            socket.emit('set-auto-msg', { botId: id, active: act, msg: document.getElementById('om'+id).value, time: document.getElementById('ot'+id).value });
+            socket.emit('set-auto-msg', { 
+                botId: id, active: act, 
+                msg: document.getElementById('om'+id).value, 
+                time: document.getElementById('ot'+id).value,
+                unit: document.getElementById('ou'+id).value 
+            });
         }
-        function mv(id, dir, state) { socket.emit('move', { botId: id, dir, state }); }
+        function mv(id, dir, state) { socket.emit('move', { botId: id, dir: dir, state: state }); }
+        function jump(id) { mv(id, 'jump', true); setTimeout(() => mv(id, 'jump', false), 200); }
+
         socket.on('log', (d) => {
             const l = document.getElementById('l'+d.botId);
             if(l) { l.innerHTML += `<div>${d.msg}</div>`; l.scrollTop = l.scrollHeight; }
