@@ -1,10 +1,14 @@
-body { background: #111; color: white; font-family: sans-serif; padding: 10px; }
-.container { background: #222; padding: 15px; border-radius: 8px; max-width: 350px; margin: auto; }
-input { background: #333; color: white; border: 1px solid #444; padding: 8px; margin: 3px; border-radius: 4px; }
-.log { height: 150px; background: black; overflow-y: auto; font-size: 11px; padding: 5px; margin: 10px 0; border: 1px solid #333; }
-.map { height: 80px; background: #000; position: relative; border: 1px solid #444; margin: 5px 0; }
-.dot { width: 6px; height: 6px; background: red; position: absolute; border-radius: 50%; }
-.move-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; text-align: center; }
-.join-btn { width: 100%; padding: 10px; background: #27ae60; color: white; border: none; cursor: pointer; }
-.tab-btn { padding: 8px; background: #444; color: white; border: none; margin-right: 5px; }
-.oto { background: #333; padding: 5px; margin: 5px 0; border-radius: 4px; }
+body { background: #121212; color: #eee; font-family: sans-serif; padding: 10px; }
+.container { background: #1e1e1e; padding: 15px; border-radius: 10px; max-width: 340px; margin: auto; border: 1px solid #333; }
+input { background: #2a2a2a; color: white; border: 1px solid #444; padding: 8px; margin: 3px 0; border-radius: 5px; width: 100%; box-sizing: border-box; }
+.log { height: 180px; background: black; overflow-y: auto; font-size: 11px; padding: 8px; margin: 10px 0; border: 1px solid #333; }
+.map-box { height: 80px; background: #000; position: relative; border: 1px solid #444; border-radius: 5px; overflow: hidden; }
+.dot { width: 8px; height: 8px; background: #00ff00; position: absolute; border-radius: 50%; box-shadow: 0 0 8px #00ff00; transition: 0.3s; }
+.join-btn { width: 100%; padding: 12px; background: #c0392b; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+.tab-btn { padding: 10px; background: #333; color: #888; border: none; margin-right: 5px; border-radius: 5px; cursor: pointer; }
+.tab-btn.active { background: #c0392b; color: white; }
+.plus-btn { background: #27ae60; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+.row { display: flex; gap: 5px; }
+.oto-box { background: #2c3e50; padding: 10px; border-radius: 5px; margin: 10px 0; }
+.move-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
+.move-grid button { padding: 15px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer; }
