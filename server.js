@@ -10,7 +10,13 @@ let bots = {};
 io.on('connection', (socket) => {
     socket.on('join', (data) => {
         const botId = String(data.botId);
-        if (bots[botId]) { bots[botId].quit(); delete bots[botId]; }
+        
+        // Eğer zaten bot varsa temizle
+        if (bots[botId]) { 
+            bots[botId].quit(); 
+            clearInterval(bots[botId].otoInterval);
+            delete bots[botId]; 
+        }
 
         const bot = mineflayer.createBot({
             host: data.host,
@@ -20,35 +26,79 @@ io.on('connection', (socket) => {
         });
 
         bot.otoInterval = null;
+        bot.lastHost = data.host; // Yeniden bağlanma için IP'yi sakla
+        bot.lastPort = data.port;
+        bot.lastUser = data.username;
         bots[botId] = bot;
 
-        bot.on('messagestr', (msg) => {
-            const low = msg.toLowerCase();
-            if (low.includes("/register")) setTimeout(() => bot.chat(`/register Santa1234 Santa1234`), 1000);
-            if (low.includes("/login")) setTimeout(() => bot.chat(`/login Santa1234`), 1000);
+        // MATEMATİK VE KELİME ÇÖZÜCÜ (ETİKETLİ)
+        bot.on('chat', (username, message) => {
+            if (username === bot.username) return;
 
-            // Matematik & Kelime Çözücü (+, -, *, /, :)
-            let mathMsg = msg.replace(/:/g, '/').replace(/x/g, '*');
-            const mathMatch = mathMsg.match(/(\d+)\s*[\+\-\*\/]\s*(\d+)/);
+            // Matematik: x -> *, : -> / çevir ve çöz
+            let cleanMsg = message.replace(/x/g, '*').replace(/:/g, '/');
+            const mathMatch = cleanMsg.match(/(\d+)\s*[\+\-\*\/]\s*(\d+)/);
+
             if (mathMatch) {
                 try {
-                    const res = eval(mathMatch[0]);
-                    setTimeout(() => bot.chat(String(res)), 500);
+                    const result = eval(mathMatch[0]);
+                    setTimeout(() => bot.chat(`${result} @${username}`), 300);
                 } catch (e) {}
             }
-            if (msg.includes("yazan") || msg.includes("kelime")) {
-                const parts = msg.trim().split(/\s+/);
+
+            // Kelime Yarışması
+            const low = message.toLowerCase();
+            if (low.includes("yaz") || low.includes("kelime")) {
+                const parts = message.trim().split(/\s+/);
                 const word = parts[parts.length - 1].replace(/[?.!,:;]/g, "");
-                if (word.length > 1) setTimeout(() => bot.chat(word), 400);
+                if (word.length > 1 && isNaN(word)) {
+                    setTimeout(() => bot.chat(`${word} @${username}`), 250);
+                }
             }
         });
 
-        bot.on('spawn', () => socket.emit('log', { botId, msg: '<b style="color:lime;">Bot Bağlandı!</b>' }));
+        // Giriş ve Tarama Koruması
+        bot.on('messagestr', (msg) => {
+            const low = msg.toLowerCase();
+            if (low.includes("/register")) bot.chat(`/register Santa1234 Santa1234`);
+            if (low.includes("/login")) bot.chat(`/login Santa1234`);
+            if (msg.includes("TARAMA TAMAMLANDI")) setTimeout(() => bot.chat(`/login Santa1234`), 1000);
+        });
+
+        bot.on('spawn', () => socket.emit('log', { botId, msg: '<b style="color:lime;">[SİSTEM] Bot Başarıyla Bağlandı!</b>' }));
         bot.on('message', (json) => socket.emit('log', { botId, msg: json.toHTML() }));
-        bot.on('end', () => { clearInterval(bot.otoInterval); delete bots[botId]; });
+        bot.on('end', (reason) => {
+            clearInterval(bot.otoInterval);
+            socket.emit('log', { botId, msg: `<b style="color:red;">[SİSTEM] Bağlantı Koptu: ${reason}</b>` });
+        });
     });
 
-    // Zaman Birimli Oto Mesaj
+    // BAĞLANTIYI KES / ÇIK
+    socket.on('quit-bot', (data) => {
+        const bot = bots[String(data.botId)];
+        if (bot) {
+            bot.quit();
+            clearInterval(bot.otoInterval);
+            delete bots[data.botId];
+            socket.emit('log', { botId: data.botId, msg: '<b style="color:orange;">[SİSTEM] Sunucudan çıkış yapıldı.</b>' });
+        }
+    });
+
+    // HAREKET SİSTEMİ
+    socket.on('move', (data) => {
+        const bot = bots[String(data.botId)];
+        if (bot && bot.entity) bot.setControlState(data.dir, data.state);
+    });
+
+    socket.on('jump', (data) => {
+        const bot = bots[String(data.botId)];
+        if (bot && bot.entity) {
+            bot.setControlState('jump', true);
+            setTimeout(() => bot.setControlState('jump', false), 200);
+        }
+    });
+
+    // OTO MESAJ
     socket.on('set-auto-msg', (data) => {
         const bot = bots[String(data.botId)];
         if (!bot) return;
@@ -65,16 +115,8 @@ io.on('connection', (socket) => {
         const bot = bots[String(data.botId)];
         if (bot) bot.chat(data.msg);
     });
-
-    // Basılı Tutma Sistemi
-    socket.on('move', (data) => {
-        const bot = bots[String(data.botId)];
-        if (bot && bot.entity) {
-            bot.setControlState(data.dir, data.state);
-        }
-    });
 });
 
 const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => console.log('Sistem Aktif'));
-                    
+http.listen(PORT, () => console.log('Santa Panel Online!'));
+                                                              
