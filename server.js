@@ -10,7 +10,7 @@ let bots = {};
 io.on('connection', (socket) => {
     socket.on('join', (data) => {
         const botId = String(data.botId);
-        if (bots[botId]) { bots[botId].quit(); delete bots[botId]; }
+        if (bots[botId]) { bots[botId].quit(); clearInterval(bots[botId].afkInt); delete bots[botId]; }
 
         const bot = mineflayer.createBot({
             host: data.host,
@@ -19,17 +19,17 @@ io.on('connection', (socket) => {
             version: false
         });
 
-        bot.otoInterval = null;
-        bots[botId] = bot;
-
-        // Anti-AFK: Her 30 saniyede bir zıpla ve sağa-sola bak
-        const afkInterval = setInterval(() => {
+        bot.otoInt = null;
+        // Anti-AFK: 25 saniyede bir ufak hareket ve zıplama
+        bot.afkInt = setInterval(() => {
             if (bot.entity) {
                 bot.setControlState('jump', true);
-                setTimeout(() => bot.setControlState('jump', false), 500);
-                bot.look(bot.entity.yaw + 0.5, 0);
+                setTimeout(() => bot.setControlState('jump', false), 400);
+                bot.look(bot.entity.yaw + 0.2, 0);
             }
-        }, 30000);
+        }, 25000);
+
+        bots[botId] = bot;
 
         bot.on('messagestr', (msg) => {
             const low = msg.toLowerCase();
@@ -37,29 +37,34 @@ io.on('connection', (socket) => {
             if (low.includes("/login")) bot.chat(`/login Santa1234`);
         });
 
-        bot.on('spawn', () => socket.emit('log', { botId, msg: '<b>Bot AFK Modunda Aktif!</b>' }));
+        bot.on('spawn', () => socket.emit('log', { botId, msg: '<span style="color:#2ecc71">● Bağlantı Başarılı</span>' }));
         bot.on('message', (json) => socket.emit('log', { botId, msg: json.toHTML() }));
-        
-        bot.on('end', () => { 
-            clearInterval(bot.otoInterval); 
-            clearInterval(afkInterval);
-            delete bots[botId]; 
-        });
+        bot.on('end', () => { socket.emit('log', { botId, msg: '<span style="color:#e74c3c">● Bağlantı Kesildi</span>' }); });
+    });
+
+    socket.on('quit-bot', (data) => {
+        if (bots[data.botId]) {
+            bots[data.botId].quit();
+            clearInterval(bots[data.botId].afkInt);
+            clearInterval(bots[data.botId].otoInt);
+            delete bots[data.botId];
+            socket.emit('log', { botId: data.botId, msg: '<span style="color:#f1c40f">● Bot Kapatıldı.</span>' });
+        }
     });
 
     socket.on('set-auto-msg', (data) => {
-        const bot = bots[String(data.botId)];
+        const bot = bots[data.botId];
         if (!bot) return;
-        clearInterval(bot.otoInterval);
+        clearInterval(bot.otoInt);
         if (data.active) {
-            bot.otoInterval = setInterval(() => { if(bot.entity) bot.chat(data.msg); }, data.time * 1000);
+            bot.otoInt = setInterval(() => { if(bot.entity) bot.chat(data.msg); }, data.time * 1000);
         }
     });
 
     socket.on('send-chat', (data) => {
-        const bot = bots[String(data.botId)];
-        if (bot) bot.chat(data.msg);
+        if (bots[data.botId]) bots[data.botId].chat(data.msg);
     });
 });
 
-http.listen(process.env.PORT || 3000);
+const PORT = process.env.PORT || 3000;
+http.listen(PORT, () => console.log('Santa AFK v2 Ready'));
