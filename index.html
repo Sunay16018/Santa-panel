@@ -2,38 +2,63 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Santa AFK Control</title>
+    <title>Santa AFK v3</title>
     <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <div class="app-container">
-        <div class="card">
-            <div class="card-header">SANTA AFK PANEL</div>
-            
-            <div class="input-group">
-                <input id="h" placeholder="Sunucu IP (Örn: oyna.server.com)">
-                <input id="u" placeholder="Bot Kullanıcı Adı">
-            </div>
+    <div class="main-card">
+        <h2 class="title">SANTA AFK <span>v3.0</span></h2>
+        
+        <div class="input-section">
+            <input id="h" placeholder="Sunucu Adresi (IP:Port)">
+            <input id="u" placeholder="Bot İsmi">
+        </div>
 
-            <div class="btn-group">
-                <button onclick="join()" class="btn btn-join">BAĞLAN</button>
-                <button onclick="join()" class="btn btn-reconnect">YENİDEN BAĞLAN</button>
-            </div>
-            <button onclick="quit()" class="btn btn-quit">SUNUCUDAN AYRIL</button>
+        <div class="actions">
+            <button onclick="join()" class="btn btn-primary">BAĞLAN</button>
+            <button onclick="join()" class="btn btn-secondary">YENİDEN BAĞLAN</button>
+        </div>
+        <button onclick="quit()" class="btn btn-danger-outline">BAĞLANTIYI KES</button>
 
-            <div id="l" class="log-area">Sistem hazır, botu bağlayın...</div>
+        <div id="l" class="log-screen">Sistem başlatılmaya hazır...</div>
 
-            <div class="afk-settings">
-                <p>OTOMATİK MESAJ SİSTEMİ</p>
-                <input id="om" placeholder="Mesajınız...">
-                <div class="row">
-                    <input id="ot" type="number" placeholder="Saniye" style="width: 80px">
-                    <button onclick="start(true)" class="btn btn-start">BAŞLAT</button>
-                    <button onclick="start(false)" class="btn btn-stop">DURDUR</button>
-                </div>
+        <div class="oto-msg-card">
+            <label>OTO MESAJ AYARI</label>
+            <input id="om" placeholder="Mesajı yazın...">
+            <div class="row">
+                <input id="ot" type="number" placeholder="Saniye">
+                <button onclick="start(true)" class="btn btn-success">BAŞLAT</button>
+                <button onclick="start(false)" class="btn btn-gray">DURDUR</button>
             </div>
+        </div>
+
+        <input id="m" class="chat-input" placeholder="Chata mesaj gönder..." onkeypress="if(event.key==='Enter')send()">
+    </div>
+
+    <script>
+        const socket = io();
+        function join() {
+            const h = document.getElementById('h').value.split(':');
+            socket.emit('join', { botId: 1, host: h[0], port: h[1]||25565, username: document.getElementById('u').value });
+        }
+        function quit() { socket.emit('quit-bot', { botId: 1 }); }
+        function send() {
+            const i = document.getElementById('m');
+            socket.emit('send-chat', { botId: 1, msg: i.value }); i.value = "";
+        }
+        function start(act) {
+            socket.emit('set-auto-msg', { botId: 1, active: act, msg: document.getElementById('om').value, time: document.getElementById('ot').value });
+        }
+        socket.on('log', (d) => {
+            const l = document.getElementById('l');
+            if(l.innerText.includes("Sistem")) l.innerHTML = "";
+            l.innerHTML += `<div>${d.msg}</div>`;
+            l.scrollTop = l.scrollHeight;
+        });
+    </script>
+</body>
+</html>
 
             <div class="chat-input-area">
                 <input id="m" placeholder="Hızlı mesaj gönder..." onkeypress="if(event.key==='Enter')send()">
