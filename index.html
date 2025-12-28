@@ -1,38 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Santa Panel Pro</title>
+    <title>Santa Full Panel</title>
     <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <button onclick="addBot()" class="plus-btn">HESAP EKLE +</button>
+    <div id="tabs">
+        <button onclick="addBot()" class="plus-btn">YENİ HESAP +</button>
+    </div>
     <div id="panels"></div>
+
     <script>
         const socket = io();
-        let counts = 0;
+        let botCount = 0;
+
         function addBot() {
-            counts++; const id = counts;
+            botCount++; const id = botCount;
+            
+            // Tab butonu
+            const tbtn = document.createElement('button');
+            tbtn.className = 'tab-btn'; tbtn.id = `t${id}`;
+            tbtn.innerText = `Hesap ${id}`;
+            tbtn.onclick = () => showTab(id);
+            document.querySelector('.plus-btn').before(tbtn);
+
             const p = document.createElement('div');
-            p.className = "container";
+            p.className = "container"; p.id = `panel-${id}`;
+            p.style.display = 'none';
             p.innerHTML = `
-                <h3>Bot #${id}</h3>
-                <input id="h${id}" placeholder="IP:Port"> <input id="u${id}" placeholder="İsim">
-                <button onclick="join(${id})" class="main-btn">BAĞLAN</button>
+                <div class="header">HESAP #${id}</div>
+                <div class="row">
+                    <input id="h${id}" placeholder="IP:Port">
+                    <input id="u${id}" placeholder="Bot İsmi">
+                </div>
+                <div class="row">
+                    <button onclick="join(${id})" class="btn green">BAĞLAN</button>
+                    <button onclick="join(${id})" class="btn blue">YENİDEN BAĞLAN</button>
+                    <button onclick="quit(${id})" class="btn red">ÇIK</button>
+                </div>
+                
                 <div id="l${id}" class="log-box"></div>
                 
                 <div class="oto-box">
                     <input id="om${id}" placeholder="Otomatik Mesaj">
-                    <div style="display:flex; gap:5px; margin:5px 0;">
-                        <input id="ot${id}" type="number" placeholder="Süre" style="width:60%">
+                    <div class="row">
+                        <input id="ot${id}" type="number" placeholder="Süre" style="flex:1">
                         <select id="ou${id}"><option value="sec">Sn</option><option value="min">Dk</option><option value="hour">Sa</option></select>
+                        <button onclick="start(${id},true)">BAŞLAT</button>
+                        <button onclick="start(${id},false)" style="background:#c0392b">DUR</button>
                     </div>
-                    <button onclick="start(${id},true)" style="background:#27ae60">BAŞLAT</button>
-                    <button onclick="start(${id},false)" style="background:#c0392b">DUR</button>
                 </div>
 
-                <input id="m${id}" placeholder="Mesaj..." onkeypress="if(event.key==='Enter')send(${id})">
+                <input id="m${id}" placeholder="Mesaj yaz..." onkeypress="if(event.key==='Enter')send(${id})">
                 
                 <div class="controls">
                     <button class="ctrl" onmousedown="mv(${id},'forward',true)" onmouseup="mv(${id},'forward',false)" ontouchstart="mv(${id},'forward',true)" ontouchend="mv(${id},'forward',false)">▲</button>
@@ -42,31 +63,45 @@
                     <button class="jump-btn" onclick="jump(${id})">ZIPLA</button>
                 </div>`;
             document.getElementById('panels').appendChild(p);
+            showTab(id);
+        }
+
+        function showTab(id) {
+            document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`panel-${id}`).style.display = 'block';
+            document.getElementById(`t${id}`).classList.add('active');
         }
 
         function join(id) {
-            const h = document.getElementById('h'+id).value.split(':');
-            socket.emit('join', { botId: id, host: h[0], port: h[1]||25565, username: document.getElementById('u'+id).value });
+            const h = document.getElementById(`h${id}`).value.split(':');
+            socket.emit('join', { botId: id, host: h[0], port: h[1]||25565, username: document.getElementById(`u${id}`).value });
         }
+
+        function quit(id) { socket.emit('quit-bot', { botId: id }); }
+
         function send(id) {
-            const i = document.getElementById('m'+id);
+            const i = document.getElementById(`m${id}`);
             socket.emit('send-chat', { botId: id, msg: i.value }); i.value = "";
         }
+
         function start(id, act) {
             socket.emit('set-auto-msg', { 
                 botId: id, active: act, 
-                msg: document.getElementById('om'+id).value, 
-                time: document.getElementById('ot'+id).value,
-                unit: document.getElementById('ou'+id).value 
+                msg: document.getElementById(`om${id}`).value, 
+                time: document.getElementById(`ot${id}`).value,
+                unit: document.getElementById(`ou${id}`).value 
             });
         }
-        function mv(id, dir, state) { socket.emit('move', { botId: id, dir: dir, state: state }); }
-        function jump(id) { mv(id, 'jump', true); setTimeout(() => mv(id, 'jump', false), 200); }
+
+        function mv(id, dir, state) { socket.emit('move', { botId: id, dir, state }); }
+        function jump(id) { socket.emit('jump', { botId: id }); }
 
         socket.on('log', (d) => {
-            const l = document.getElementById('l'+d.botId);
+            const l = document.getElementById(`l${d.botId}`);
             if(l) { l.innerHTML += `<div>${d.msg}</div>`; l.scrollTop = l.scrollHeight; }
         });
+        
         addBot();
     </script>
 </body>
