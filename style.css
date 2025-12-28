@@ -1,8 +1,12 @@
-body { background: #111; color: white; font-family: sans-serif; }
-.container { background: #222; padding: 15px; border-radius: 8px; width: 300px; margin: 10px auto; }
-.log-box { height: 150px; background: black; overflow-y: auto; font-size: 11px; padding: 5px; margin: 10px 0; color: lime; }
-input { background: #333; color: white; border: 1px solid #444; padding: 8px; width: 90%; margin: 3px 0; }
-.main-btn { width: 100%; background: #c0392b; color: white; border: none; padding: 10px; cursor: pointer; }
-.oto { background: #333; padding: 5px; margin: 5px 0; }
-.controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-.controls button { padding: 10px; background: #444; color: white; border: none; }
+body { background: #121212; color: white; font-family: sans-serif; padding: 10px; margin: 0; }
+.container { background: #1e1e1e; padding: 15px; border-radius: 12px; width: 320px; margin: 10px auto; border: 1px solid #333; }
+.log-box { height: 200px; background: #000; overflow-y: auto; font-size: 11px; padding: 10px; margin: 10px 0; border: 1px solid #444; color: #00ff00; }
+input, select { background: #2a2a2a; color: white; border: 1px solid #444; padding: 10px; margin: 2px 0; border-radius: 6px; box-sizing: border-box; width: 100%; }
+.main-btn { width: 100%; background: #c0392b; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+.oto-box { background: #252525; padding: 10px; border-radius: 8px; margin: 10px 0; border: 1px solid #333; }
+.oto-box button { width: 48%; padding: 8px; border: none; border-radius: 5px; color: white; cursor: pointer; font-weight: bold; }
+.controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+.ctrl { padding: 20px; background: #333; color: white; border: none; border-radius: 10px; font-size: 24px; cursor: pointer; -webkit-user-select: none; }
+.ctrl:active { background: #c0392b; }
+.jump-btn { grid-column: span 3; padding: 15px; background: #2980b9; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+.plus-btn { background: #27ae60; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px; width: 100%; }
