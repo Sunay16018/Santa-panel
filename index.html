@@ -2,107 +2,65 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Santa Full Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santa AFK Control</title>
     <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <div id="tabs">
-        <button onclick="addBot()" class="plus-btn">YENİ HESAP +</button>
+    <div class="app-container">
+        <div class="card">
+            <div class="card-header">SANTA AFK PANEL</div>
+            
+            <div class="input-group">
+                <input id="h" placeholder="Sunucu IP (Örn: oyna.server.com)">
+                <input id="u" placeholder="Bot Kullanıcı Adı">
+            </div>
+
+            <div class="btn-group">
+                <button onclick="join()" class="btn btn-join">BAĞLAN</button>
+                <button onclick="join()" class="btn btn-reconnect">YENİDEN BAĞLAN</button>
+            </div>
+            <button onclick="quit()" class="btn btn-quit">SUNUCUDAN AYRIL</button>
+
+            <div id="l" class="log-area">Sistem hazır, botu bağlayın...</div>
+
+            <div class="afk-settings">
+                <p>OTOMATİK MESAJ SİSTEMİ</p>
+                <input id="om" placeholder="Mesajınız...">
+                <div class="row">
+                    <input id="ot" type="number" placeholder="Saniye" style="width: 80px">
+                    <button onclick="start(true)" class="btn btn-start">BAŞLAT</button>
+                    <button onclick="start(false)" class="btn btn-stop">DURDUR</button>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input id="m" placeholder="Hızlı mesaj gönder..." onkeypress="if(event.key==='Enter')send()">
+            </div>
+        </div>
     </div>
-    <div id="panels"></div>
 
     <script>
         const socket = io();
-        let botCount = 0;
-
-        function addBot() {
-            botCount++; const id = botCount;
-            
-            // Tab butonu
-            const tbtn = document.createElement('button');
-            tbtn.className = 'tab-btn'; tbtn.id = `t${id}`;
-            tbtn.innerText = `Hesap ${id}`;
-            tbtn.onclick = () => showTab(id);
-            document.querySelector('.plus-btn').before(tbtn);
-
-            const p = document.createElement('div');
-            p.className = "container"; p.id = `panel-${id}`;
-            p.style.display = 'none';
-            p.innerHTML = `
-                <div class="header">HESAP #${id}</div>
-                <div class="row">
-                    <input id="h${id}" placeholder="IP:Port">
-                    <input id="u${id}" placeholder="Bot İsmi">
-                </div>
-                <div class="row">
-                    <button onclick="join(${id})" class="btn green">BAĞLAN</button>
-                    <button onclick="join(${id})" class="btn blue">YENİDEN BAĞLAN</button>
-                    <button onclick="quit(${id})" class="btn red">ÇIK</button>
-                </div>
-                
-                <div id="l${id}" class="log-box"></div>
-                
-                <div class="oto-box">
-                    <input id="om${id}" placeholder="Otomatik Mesaj">
-                    <div class="row">
-                        <input id="ot${id}" type="number" placeholder="Süre" style="flex:1">
-                        <select id="ou${id}"><option value="sec">Sn</option><option value="min">Dk</option><option value="hour">Sa</option></select>
-                        <button onclick="start(${id},true)">BAŞLAT</button>
-                        <button onclick="start(${id},false)" style="background:#c0392b">DUR</button>
-                    </div>
-                </div>
-
-                <input id="m${id}" placeholder="Mesaj yaz..." onkeypress="if(event.key==='Enter')send(${id})">
-                
-                <div class="controls">
-                    <button class="ctrl" onmousedown="mv(${id},'forward',true)" onmouseup="mv(${id},'forward',false)" ontouchstart="mv(${id},'forward',true)" ontouchend="mv(${id},'forward',false)">▲</button>
-                    <button class="ctrl" onmousedown="mv(${id},'left',true)" onmouseup="mv(${id},'left',false)" ontouchstart="mv(${id},'left',true)" ontouchend="mv(${id},'left',false)">◀</button>
-                    <button class="ctrl" onmousedown="mv(${id},'back',true)" onmouseup="mv(${id},'back',false)" ontouchstart="mv(${id},'back',true)" ontouchend="mv(${id},'back',false)">▼</button>
-                    <button class="ctrl" onmousedown="mv(${id},'right',true)" onmouseup="mv(${id},'right',false)" ontouchstart="mv(${id},'right',true)" ontouchend="mv(${id},'right',false)">▶</button>
-                    <button class="jump-btn" onclick="jump(${id})">ZIPLA</button>
-                </div>`;
-            document.getElementById('panels').appendChild(p);
-            showTab(id);
+        function join() {
+            const h = document.getElementById('h').value.split(':');
+            socket.emit('join', { botId: 1, host: h[0], port: h[1]||25565, username: document.getElementById('u').value });
         }
-
-        function showTab(id) {
-            document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`panel-${id}`).style.display = 'block';
-            document.getElementById(`t${id}`).classList.add('active');
+        function quit() { socket.emit('quit-bot', { botId: 1 }); }
+        function send() {
+            const i = document.getElementById('m');
+            socket.emit('send-chat', { botId: 1, msg: i.value }); i.value = "";
         }
-
-        function join(id) {
-            const h = document.getElementById(`h${id}`).value.split(':');
-            socket.emit('join', { botId: id, host: h[0], port: h[1]||25565, username: document.getElementById(`u${id}`).value });
+        function start(act) {
+            socket.emit('set-auto-msg', { botId: 1, active: act, msg: document.getElementById('om').value, time: document.getElementById('ot').value });
         }
-
-        function quit(id) { socket.emit('quit-bot', { botId: id }); }
-
-        function send(id) {
-            const i = document.getElementById(`m${id}`);
-            socket.emit('send-chat', { botId: id, msg: i.value }); i.value = "";
-        }
-
-        function start(id, act) {
-            socket.emit('set-auto-msg', { 
-                botId: id, active: act, 
-                msg: document.getElementById(`om${id}`).value, 
-                time: document.getElementById(`ot${id}`).value,
-                unit: document.getElementById(`ou${id}`).value 
-            });
-        }
-
-        function mv(id, dir, state) { socket.emit('move', { botId: id, dir, state }); }
-        function jump(id) { socket.emit('jump', { botId: id }); }
-
         socket.on('log', (d) => {
-            const l = document.getElementById(`l${d.botId}`);
-            if(l) { l.innerHTML += `<div>${d.msg}</div>`; l.scrollTop = l.scrollHeight; }
+            const l = document.getElementById('l');
+            if(l.innerHTML.includes("Sistem hazır")) l.innerHTML = "";
+            l.innerHTML += `<div>${d.msg}</div>`;
+            l.scrollTop = l.scrollHeight;
         });
-        
-        addBot();
     </script>
 </body>
 </html>
