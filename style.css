@@ -1,39 +1,90 @@
-:root {
-    --bg: #0f172a;
-    --card: #1e293b;
-    --primary: #3b82f6;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --text: #f8fafc;
-}
-
 body {
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', -apple-system, sans-serif;
-    margin: 0;
+    background-color: #050505;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh;
+    margin: 0;
 }
 
-.card {
-    background: var(--card);
+.main-card {
+    background: #121212;
     width: 380px;
-    padding: 24px;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    border: 1px solid #334155;
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid #222;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
 }
 
-.card-header {
-    font-size: 20px;
-    font-weight: 800;
+.title {
     text-align: center;
-    margin-bottom: 20px;
-    letter-spacing: 1px;
+    font-size: 24px;
+    color: #fff;
+    margin-bottom: 25px;
+    font-weight: 900;
+}
+
+.title span { color: #ff4757; font-size: 14px; }
+
+input {
+    width: 100%;
+    padding: 12px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #fff;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
+
+input:focus { border-color: #ff4757; outline: none; }
+
+.btn {
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+    font-size: 13px;
+}
+
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+.btn-primary { background: #ff4757; color: white; }
+.btn-secondary { background: #2f3542; color: white; }
+.btn-danger-outline { background: transparent; color: #ff4757; border: 1px solid #ff4757; width: 100%; }
+.btn-success { background: #2ed573; color: white; }
+.btn-gray { background: #57606f; color: white; }
+
+.log-screen {
+    height: 150px;
+    background: #000;
+    border-radius: 10px;
+    margin: 20px 0;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 11px;
+    overflow-y: auto;
+    border: 1px solid #222;
+    line-height: 1.5;
+}
+
+.oto-msg-card {
+    background: #1a1a1a;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.oto-msg-card label { display: block; font-size: 10px; color: #777; margin-bottom: 5px; font-weight: bold; }
+
+.row { display: flex; gap: 10px; }
+
+.chat-input { border-color: #2f3542; margin-top: 10px; }
     color: var(--primary);
 }
 
